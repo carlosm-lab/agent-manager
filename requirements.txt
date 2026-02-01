@@ -15,7 +15,7 @@ flask-limiter==3.8.0
 redis==5.2.1
 
 # Configuración
-python-dotenv==1.0.1
+python-dotenv==1.2.1
 
 # Pins de seguridad
 urllib3==2.6.3
