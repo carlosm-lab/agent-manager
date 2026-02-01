@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Sitio en Construcción{% endblock %}
+
+{% block content %}
+<!-- Definiciones SVG -->
+{% include "components/svg_defs.html" %}
+
+<!-- Engranajes animados -->
+<div class="fixed inset-0 overflow-visible pointer-events-none z-0">
+    {% include "components/animated_gears.html" %}
+</div>
+
+<!-- Contenido principal -->
+<main class="flex-grow flex items-center justify-center relative px-0 md:px-4 py-12 w-full z-10 min-h-screen">
+    <div
+        class="relative w-full max-w-[1100px] glass-panel rounded-3xl shadow-glass flex flex-col md:flex-row z-10 overflow-hidden ring-1 ring-white/60">
+        <!-- Lado izquierdo -->
+        <div class="flex-1 p-10 md:p-14 flex flex-col justify-center relative z-20">
+            <div class="relative z-10">
+
+                <!-- Badge de estado - SKELETON -->
+                <div class="skeleton-content inline mb-8">
+                    <div class="skeleton-pill rounded-full"></div>
+                </div>
+                <!-- Badge de estado - REAL -->
+                <div
+                    class="real-content inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-slate-100/80 border border-slate-200 text-slate-600 text-[11px] font-bold uppercase tracking-wider mb-8 shadow-sm backdrop-blur-sm">
+                    <span
+                        class="w-2 h-2 rounded-full bg-orange-500 animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.6)]"></span>
+                    Designed BY: Carlos Molina
+                </div>
+
+                <!-- Título - SKELETON -->
+                <div class="skeleton-content mb-6">
+                    <div class="skeleton-line h1 w-[280px]"></div>
+                    <div class="skeleton-line h1 w-[360px]"></div>
+                </div>
+                <!-- Título - REAL -->
+                <h1
+                    class="real-content title-construction text-3xl md:text-5xl lg:text-6xl font-extrabold leading-[1.1] mb-6 tracking-tight">
+                    SITIO EN <br />
+                    <span class="text-metallic drop-shadow-sm">CONSTRUCCIÓN</span>
+                </h1>
+
+                <!-- Descripción - SKELETON -->
+                <div class="skeleton-content mb-10 max-w-md">
+                    <div class="skeleton-line p w-full"></div>
+                    <div class="skeleton-line p w-[80%]"></div>
+                </div>
+                <!-- Descripción - REAL -->
+                <p class="real-content text-slate-500 text-lg leading-relaxed mb-10 max-w-md font-medium">
+                    No tengo idea de lo que estoy haciendo, pero regresa más tarde, quizá te sorprenda.
+                </p>
+
+                <!-- Panel de estado - SKELETON -->
+                <div class="skeleton-content">
+                    <div class="bg-white/40 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg">
+                        <div class="flex justify-between items-end mb-4">
+                            <div class="flex items-center gap-2">
+                                <div class="skeleton-box skeleton-progress-icon rounded"></div>
+                                <div class="skeleton-line skeleton-title-line"></div>
+                            </div>
+                            <div class="skeleton-line skeleton-percent"></div>
+                        </div>
+                        <div class="skeleton-progress w-full"></div>
+                        <div class="flex flex-wrap gap-3 mt-5">
+                            <div class="skeleton-box skeleton-tag-1 rounded-lg"></div>
+                            <div class="skeleton-box skeleton-tag-2 rounded-lg"></div>
+                            <div class="skeleton-box skeleton-tag-3 rounded-lg"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Panel de estado - REAL -->
+                <div class="real-content bg-white/40 backdrop-blur-md p-6 rounded-2xl border border-white/60 shadow-lg">
+                    <div class="flex justify-between items-end mb-4">
+                        <span class="text-slate-600 font-semibold flex items-center gap-2 text-sm tracking-wide">
+                            <span class="material-symbols-outlined text-blue-600 material-symbols-filled">dataset</span>
+                            ESTADO DE SISTEMA
+                        </span>
+                        <span class="text-blue-600 font-bold text-xl drop-shadow-sm">75%</span>
+                    </div>
+                    <div
+                        class="h-5 w-full bg-slate-200/50 rounded-full p-1 shadow-inner ring-1 ring-white/50 relative overflow-hidden">
+                        <div
+                            class="progress-bar w-progress-75 h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full shadow-[0_0_15px_rgba(59,130,246,0.4)] overflow-hidden">
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3 mt-5">
+                        <div
+                            class="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-white/60 px-3 py-1.5 rounded-lg shadow-sm border border-white/50">
+                            <span
+                                class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.6)]"></span>
+                            Backend
+                        </div>
+                        <div
+                            class="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-slate-500 bg-white/60 px-3 py-1.5 rounded-lg shadow-sm border border-white/50">
+                            <span
+                                class="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.6)]"></span>
+                            Database
+                        </div>
+                        <div
+                            class="flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider text-blue-600 bg-blue-50/60 px-3 py-1.5 rounded-lg shadow-sm border border-blue-100">
+                            <span class="material-symbols-outlined text-sm animate-spin">settings</span> Compilando
+                            Frontend
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lado derecho - Animación robot -->
+        <div
+            class="w-full md:w-[50%] bg-gradient-to-br from-slate-50 to-slate-200/50 relative min-h-[500px] flex items-center justify-center overflow-hidden border-l border-white/40 shadow-inner">
+
+            <!-- Robot EVA - SKELETON -->
+            <div class="skeleton-content flex-center absolute inset-0 flex items-center justify-center">
+                <div class="flex flex-col items-center">
+                    <!-- Silueta elegante del robot EVA -->
+                    <svg class="skeleton-robot-svg" width="180" height="280" viewBox="0 0 180 280" fill="none">
+                        <!-- Cabeza ovalada -->
+                        <ellipse cx="90" cy="50" rx="45" ry="40" class="skeleton-svg-fill" />
+                        <!-- Visor/ojos -->
+                        <ellipse cx="90" cy="55" rx="30" ry="12" class="skeleton-svg-visor" />
+                        <!-- Cuello -->
+                        <rect x="75" y="85" width="30" height="15" rx="5" class="skeleton-svg-fill" />
+                        <!-- Cuerpo principal -->
+                        <path
+                            d="M45 100 Q30 140 35 200 Q40 240 90 250 Q140 240 145 200 Q150 140 135 100 Q120 95 90 95 Q60 95 45 100Z"
+                            class="skeleton-svg-fill" />
+                        <!-- Brazos -->
+                        <ellipse cx="25" cy="150" rx="12" ry="35" class="skeleton-svg-fill" />
+                        <ellipse cx="155" cy="150" rx="12" ry="35" class="skeleton-svg-fill" />
+                    </svg>
+                    <!-- Sombra -->
+                    <div class="mt-4 w-36 h-4 bg-slate-400/40 rounded-full blur-md"></div>
+                </div>
+            </div>
+
+            <!-- Robot - REAL -->
+            <div class="real-content">
+                <div
+                    class="absolute top-0 left-1/2 -translate-x-1/2 w-[80%] h-[80%] bg-blue-400/10 blur-[80px] rounded-full pointer-events-none">
+                </div>
+                {% include "components/robot.html" %}
+                <!-- Sombra -->
+                <div
+                    class="absolute bottom-10 left-1/2 -translate-x-1/2 w-48 h-8 bg-black/10 blur-xl rounded-[100%] animate-[float-shadow_6s_ease-in-out_infinite]">
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_scripts %}
+<!-- Lottie y animación del robot -->
+<script defer src="{{ url_for('static', filename='js/lottie.min.js') }}"></script>
+<script defer src="{{ url_for('static', filename='js/robot.js') }}"></script>
+{% endblock %}

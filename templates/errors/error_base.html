@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{# Plantilla base para páginas de error - evita indexación en buscadores #}
+
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+{% block extra_scripts %}
+<script defer src="{{ url_for('static', filename='js/error-handlers.js') }}"></script>
+{% endblock %}

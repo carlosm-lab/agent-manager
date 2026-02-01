@@ -1,0 +1,172 @@
+/* ==========================================================================
+   Skeleton Loader - Enfoque Simple y Efectivo
+   Cuando body NO tiene content-loaded: muestra skeletons, oculta real
+   Cuando body SÍ tiene content-loaded: muestra real, oculta skeletons
+   ========================================================================== */
+
+/* ===== ESTADOS DE VISIBILIDAD ===== */
+
+/* Estado: Cargando (skeleton visible, contenido oculto) */
+body:not(.content-loaded) .skeleton-content {
+    display: block;
+}
+
+/* Skeleton que necesita mantener flex para centrado */
+body:not(.content-loaded) .skeleton-content.flex-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+body:not(.content-loaded) .real-content {
+    display: none;
+}
+
+/* Estado: Cargado (skeleton oculto, contenido visible) */
+body.content-loaded .skeleton-content {
+    display: none;
+}
+
+body.content-loaded .real-content {
+    display: block;
+    animation: fadeIn 0.4s ease-out;
+}
+
+/* Para elementos inline-flex */
+body:not(.content-loaded) .skeleton-content.inline {
+    display: inline-flex;
+}
+
+body.content-loaded .real-content.inline {
+    display: inline-flex;
+}
+
+/* ===== COMPONENTES SKELETON ===== */
+
+/* Base de todos los skeletons - colores visibles con shimmer */
+.skeleton-line,
+.skeleton-box,
+.skeleton-pill,
+.skeleton-progress {
+    background: linear-gradient(90deg,
+            #64748b 0%,
+            #94a3b8 40%,
+            #b8c4ce 50%,
+            #94a3b8 60%,
+            #64748b 100%) !important;
+    background-size: 300% 100% !important;
+    animation: shimmer 1.5s ease-in-out infinite !important;
+}
+
+/* Línea de texto */
+.skeleton-line {
+    height: 1em;
+    border-radius: 6px;
+}
+
+.skeleton-line.h1 {
+    height: 3.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.skeleton-line.p {
+    height: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Forma rectangular */
+.skeleton-box {
+    border-radius: 8px;
+}
+
+/* Badge/Pill */
+.skeleton-pill {
+    height: 28px;
+    width: 180px;
+    border-radius: 20px;
+}
+
+/* Barra de progreso */
+.skeleton-progress {
+    height: 20px;
+    border-radius: 10px;
+}
+
+/* ===== DIMENSIONES ESPECÍFICAS ===== */
+
+/* Icono de progreso */
+.skeleton-progress-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Tags del panel de estado - ancho igual, 100% del contenedor */
+.skeleton-tag-1,
+.skeleton-tag-2,
+.skeleton-tag-3 {
+    flex: 1;
+    height: 28px;
+}
+
+/* Líneas de texto del panel */
+.skeleton-title-line {
+    width: 144px;
+    height: 16px;
+}
+
+.skeleton-percent {
+    width: 50px;
+    height: 24px;
+}
+
+/* ===== ROBOT EVA SKELETON SVG ===== */
+
+.skeleton-robot-svg {
+    opacity: 0.9;
+}
+
+.skeleton-svg-fill {
+    fill: #94a3b8;
+    animation: shimmer-svg 1.8s ease-in-out infinite;
+}
+
+.skeleton-svg-visor {
+    fill: #64748b;
+    animation: shimmer-svg 1.8s ease-in-out infinite 0.3s;
+}
+
+/* ===== ANIMACIONES ===== */
+
+@keyframes shimmer {
+    0% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: -100% 50%;
+    }
+}
+
+@keyframes shimmer-svg {
+
+    0%,
+    100% {
+        opacity: 0.6;
+    }
+
+    50% {
+        opacity: 1;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

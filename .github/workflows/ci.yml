@@ -1,0 +1,97 @@
+# CI/CD Pipeline - Flask Deploy Template
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+      
+      - name: Update Service Worker cache version
+        run: |
+          HASH=$(date +%Y%m%d%H%M)
+          sed -i "s/DEPLOY_HASH = '[^']*'/DEPLOY_HASH = '$HASH'/" static/sw.js
+          echo "Updated DEPLOY_HASH to: $HASH"
+      
+      - name: Verify lottie.min.js integrity
+        run: |
+          EXPECTED="a0757321f974527bda3cc2593bf56cc7ffe4578421249ced6ae49ffb1c529f90"
+          ACTUAL=$(sha256sum static/js/lottie.min.js | cut -d' ' -f1)
+          if [ "$EXPECTED" != "$ACTUAL" ]; then
+            echo "ERROR: lottie.min.js integrity check failed!"
+            echo "Expected: $EXPECTED"
+            echo "Actual:   $ACTUAL"
+            exit 1
+          fi
+          echo "✓ lottie.min.js integrity verified"
+      
+      - name: Run tests with coverage
+        run: pytest tests/ -v --cov=app --cov-report=term-missing --cov-fail-under=70
+      
+      - name: Security audit
+        run: pip-audit --strict
+      
+      - name: Lint check
+        run: flake8 app.py --max-line-length=120 --ignore=E501,W503,E402,E226,E302,E303
+      
+      - name: Smoke test
+        run: python -c "from app import app; print('App OK')"
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate JSON files
+        run: |
+          python -c "import json; json.load(open('static/manifest.json'))"
+          python -c "import json; json.load(open('vercel.json'))"
+      
+      - name: Validate templates exist
+        run: |
+          for f in templates/base.html templates/index.html templates/errors/error_base.html templates/errors/403.html templates/errors/404.html templates/errors/429.html templates/errors/500.html; do
+            test -f "$f" || exit 1
+          done
+      
+      - name: Validate PWA icons
+        run: |
+          test -f static/favicon.svg
+          test -f static/icons/icon-192.png
+          test -f static/icons/icon-512.png
+          test $(stat --printf="%s" static/icons/icon-192.png) -gt 1000 || { echo "ERROR: icon-192.png too small"; exit 1; }
+          test $(stat --printf="%s" static/icons/icon-512.png) -gt 5000 || { echo "ERROR: icon-512.png too small"; exit 1; }
+          echo "PWA icons validated"
+      
+      - name: Validate CSP compliance
+        run: |
+          if grep -E '<script[^>]*>[^<]' static/offline.html | grep -v 'src='; then
+            echo "ERROR: Found inline script in offline.html"
+            exit 1
+          fi
+          if grep -E '<style[^>]*>' static/offline.html; then
+            echo "ERROR: Found inline style in offline.html"
+            exit 1
+          fi
+          test -f static/css/offline.css
+          test -f static/js/offline.js
+          test -f static/js/error-handlers.js
+          echo "CSP compliance validated"

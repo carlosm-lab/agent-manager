@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>{% block title %}Sitio en Construcción{% endblock %}</title>
+
+    <!-- SEO -->
+    <meta name="description"
+        content="{% block meta_description %}Estamos construyendo algo increíble. Nuestro sitio estará disponible muy pronto.{% endblock %}" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="{% block og_title %}Sitio en Construcción{% endblock %}" />
+    <meta property="og:description"
+        content="Estamos construyendo algo increíble. Nuestro sitio estará disponible muy pronto." />
+    <meta property="og:locale" content="es_ES" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Sitio en Construcción" />
+    <meta name="twitter:description"
+        content="Estamos construyendo algo increíble. Nuestro sitio estará disponible muy pronto." />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}" />
+    <meta name="theme-color" content="#3b82f6" />
+
+    <!-- Estilos -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/tailwind.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/skeleton.css') }}?v=4" />
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="font-sans min-h-screen flex flex-col overflow-x-hidden text-slate-700">
+    {% block content %}{% endblock %}
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/skeleton.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script defer src="{{ url_for('static', filename='js/sw-register.js') }}"></script>
+    {% block extra_scripts %}{% endblock %}
+
+    <!-- Aviso sin JavaScript -->
+    <noscript>
+        <div class="noscript-warning">
+            Este sitio funciona mejor con JavaScript habilitado.
+        </div>
+    </noscript>
+</body>
+
+</html>

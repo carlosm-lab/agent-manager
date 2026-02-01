@@ -1,0 +1,42 @@
+{
+    "name": "VercelDeploy Template",
+    "short_name": "VDeploy",
+    "id": "/?source=pwa",
+    "description": "Plantilla profesional para pre-despliegue en Vercel",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#3b82f6",
+    "orientation": "portrait-primary",
+    "lang": "es",
+    "categories": [
+        "utilities",
+        "productivity",
+        "developer tools"
+    ],
+    "icons": [
+        {
+            "src": "/static/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/static/icons/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/static/icons/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [],
+    "related_applications": [],
+    "prefer_related_applications": false
+}

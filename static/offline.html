@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Sin conexión - VercelDeploy</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#3b82f6" />
+    <link rel="icon" type="image/svg+xml" href="/static/favicon.svg" />
+    <link rel="stylesheet" href="/static/css/offline.css" />
+</head>
+
+<body>
+    <div class="container">
+        <div class="icon-container">
+            <span class="icon">📡</span>
+        </div>
+
+        <h1>offline</h1>
+        <h2>Sin conexión a Internet</h2>
+
+        <p>
+            Parece que has perdido la conexión. Verifica tu conexión a Internet e intenta nuevamente.
+        </p>
+
+        <button id="retry-btn" class="btn" type="button">
+            🔄 Reintentar conexión
+        </button>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            <span class="status-text">Esperando conexión...</span>
+        </div>
+    </div>
+
+    <script src="/static/js/offline.js"></script>
+</body>
+
+</html>

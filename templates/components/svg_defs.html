@@ -1,0 +1,26 @@
+<!-- Definiciones SVG para gradientes y filtros -->
+<svg class="absolute" height="0" width="0">
+    <defs>
+        <linearGradient id="grad-steel" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stop-color="#E2E8F0"></stop>
+            <stop offset="50%" stop-color="#94A3B8"></stop>
+            <stop offset="100%" stop-color="#475569"></stop>
+        </linearGradient>
+        <linearGradient id="grad-brass" x1="0%" x2="100%" y1="0%" y2="100%">
+            <stop offset="0%" stop-color="#FCD34D"></stop>
+            <stop offset="50%" stop-color="#D97706"></stop>
+            <stop offset="100%" stop-color="#92400E"></stop>
+        </linearGradient>
+        <filter height="140%" id="dropShadow" width="140%" x="-20%" y="-20%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3"></feGaussianBlur>
+            <feOffset dx="2" dy="4" result="offsetblur"></feOffset>
+            <feComponentTransfer>
+                <feFuncA slope="0.3" type="linear"></feFuncA>
+            </feComponentTransfer>
+            <feMerge>
+                <feMergeNode></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+            </feMerge>
+        </filter>
+    </defs>
+</svg>
