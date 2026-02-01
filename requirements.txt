@@ -12,7 +12,7 @@ flask-wtf==1.2.2
 
 # Rate Limiting (con Redis para producción)
 flask-limiter==3.8.0
-redis==5.2.1
+redis==7.1.0
 
 # Configuración
 python-dotenv==1.0.1
