@@ -1,0 +1,365 @@
+/*
+ * Google Antigravity Manager - Estilos Personalizados
+ * Tema oscuro con glassmorphism estilo iOS
+ */
+
+/* Animación de pulso para indicadores de estado */
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Animación de entrada con desvanecimiento */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animación de brillo para bordes */
+@keyframes glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 5px rgba(14, 165, 233, 0.5);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(14, 165, 233, 0.8);
+    }
+}
+
+/* Clase de animación de entrada */
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Estilo de temporizador grande destacado */
+.timer-display {
+    font-family: 'SF Mono', 'Roboto Mono', monospace;
+    font-size: 2.5rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Temporizador de cuenta regresiva con énfasis de advertencia */
+.countdown-display {
+    font-family: 'SF Mono', 'Roboto Mono', monospace;
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #f59e0b;
+}
+
+/* Estado activo con borde brillante */
+.active-glow {
+    animation: glow 2s ease-in-out infinite;
+}
+
+/* Clase utilitaria para texto truncado */
+.truncate-email {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Estilos responsivos para elementos del dashboard */
+@media (max-width: 640px) {
+    .timer-display {
+        font-size: 1.75rem;
+    }
+
+    .countdown-display {
+        font-size: 1.25rem;
+    }
+
+    .truncate-email {
+        max-width: 150px;
+    }
+}
+
+/* Mejora visual para botones de acción */
+.btn-action {
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-action::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.btn-action:hover::after {
+    opacity: 1;
+}
+
+/* Estilos de tarjeta de estadísticas */
+.stat-card {
+    background: rgba(30, 41, 59, 0.5);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    transition: all 0.25s ease;
+}
+
+.stat-card:hover {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Valor numérico de estadística */
+.stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+
+/* Etiqueta de estadística */
+.stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+}
+
+/* Contenedor de lista de cuentas con scroll */
+.accounts-list {
+    max-height: 400px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
+}
+
+.accounts-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.accounts-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.accounts-list::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 3px;
+}
+
+.accounts-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+}
+
+/* Item de cuenta en lista */
+.account-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    background: rgba(51, 65, 85, 0.3);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.account-item:hover {
+    background: rgba(51, 65, 85, 0.5);
+}
+
+/* Avatar de cuenta con inicial */
+.account-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+/* Colores de avatar rotativos */
+.avatar-blue {
+    background: rgba(59, 130, 246, 0.2);
+    color: #3b82f6;
+}
+
+.avatar-green {
+    background: rgba(34, 197, 94, 0.2);
+    color: #22c55e;
+}
+
+.avatar-purple {
+    background: rgba(139, 92, 246, 0.2);
+    color: #8b5cf6;
+}
+
+.avatar-orange {
+    background: rgba(249, 115, 22, 0.2);
+    color: #f97316;
+}
+
+.avatar-pink {
+    background: rgba(236, 72, 153, 0.2);
+    color: #ec4899;
+}
+
+/* Información de cuenta en item de lista */
+.account-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.account-name {
+    font-weight: 500;
+    color: #f1f5f9;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-email {
+    font-size: 0.75rem;
+    color: #64748b;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Indicadores de estado de cuota */
+.quota-indicators {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.quota-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+}
+
+.quota-dot.available {
+    background: #22c55e;
+}
+
+.quota-dot.exhausted {
+    background: #ef4444;
+}
+
+/* Estilos de pantalla de bloqueo */
+.lock-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.lock-card {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 1.5rem;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 24rem;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+/* Icono de candado */
+.lock-icon {
+    width: 4rem;
+    height: 4rem;
+    margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 30px rgba(14, 165, 233, 0.3);
+}
+
+/* Campo de entrada de PIN */
+.pin-input {
+    background: rgba(15, 23, 42, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    width: 100%;
+    color: #f1f5f9;
+    font-size: 1.25rem;
+    text-align: center;
+    letter-spacing: 0.25em;
+    transition: all 0.2s ease;
+}
+
+.pin-input:focus {
+    outline: none;
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.2);
+}
+
+.pin-input::placeholder {
+    letter-spacing: normal;
+    color: #64748b;
+}
+
+/* Mensaje de error */
+.error-message {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* Botón de desbloqueo */
+.unlock-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #0ea5e9 0%, #3b82f6 100%);
+    color: white;
+    font-weight: 600;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+}
+
+.unlock-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.unlock-btn:active {
+    transform: translateY(0);
+}

@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+
+{% block title %}Cuentas - Antigravity Manager{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h1 class="text-2xl font-bold text-slate-800">Gestión de Cuentas</h1>
+    <p class="text-slate-600">Administra tus cuentas de Google Antigravity</p>
+</div>
+
+<!-- Agregar Cuenta -->
+<div class="card mb-8">
+    <h2 class="text-lg font-bold text-slate-800 mb-4">Agregar Nueva Cuenta</h2>
+    <form id="form-add-account" class="flex flex-col md:flex-row gap-3">
+        <input type="email" id="new-account-email" class="input flex-1" placeholder="Email de Google..." required>
+        <button type="submit" class="btn btn-primary">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Agregar Cuenta
+        </button>
+    </form>
+</div>
+
+<!-- Filtros -->
+<div class="flex flex-wrap items-center gap-4 mb-6">
+    <span class="text-sm font-medium text-slate-700">Filtrar:</span>
+    <div class="flex flex-wrap gap-2">
+        <button onclick="filterAccounts('all')"
+            class="btn btn-outline text-slate-600 text-sm filter-btn active bg-primary-100 text-primary-700"
+            data-filter="all">
+            Todas
+        </button>
+        <button onclick="filterAccounts('disponibles')" class="btn btn-outline text-slate-600 text-sm filter-btn"
+            data-filter="disponibles">
+            Disponibles
+        </button>
+        <button onclick="filterAccounts('limite_parcial')" class="btn btn-outline text-slate-600 text-sm filter-btn"
+            data-filter="limite_parcial">
+            Límite Parcial
+        </button>
+        <button onclick="filterAccounts('limite_total')" class="btn btn-outline text-slate-600 text-sm filter-btn"
+            data-filter="limite_total">
+            Agotadas
+        </button>
+    </div>
+
+    <div class="ml-auto">
+        <select onchange="loadAccounts(this.value)" class="input w-auto text-sm">
+            <option value="created_at">Ordenar: Fecha</option>
+            <option value="mas_usadas">Más usadas</option>
+            <option value="menos_usadas">Menos usadas</option>
+            <option value="nombre">Nombre</option>
+        </select>
+    </div>
+</div>
+
+<!-- Cuadrícula de Cuentas -->
+<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3" id="accounts-grid">
+    {% for account in accounts %}
+    <div class="card account-item transition-all hover:shadow-lg" data-id="{{ account.id }}"
+        data-clasificacion="{{ account.get_classification() }}"
+        data-activa="{{ 'true' if account.activa else 'false' }}">
+
+        <!-- Encabezado -->
+        <div class="flex items-start justify-between mb-4">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white font-bold">
+                    {{ account.email_google[0]|upper }}
+                </div>
+                <div>
+                    <p class="font-medium text-slate-800 truncate max-w-48">{{ account.email_google }}</p>
+                    <div class="flex gap-1 mt-1">
+                        {% set classification = account.get_classification() %}
+                        {% if classification == 'disponible' %}
+                        <span class="badge badge-disponible text-xs">Disponible</span>
+                        {% elif classification == 'limite_parcial' %}
+                        <span class="badge badge-parcial text-xs">Límite Parcial</span>
+                        {% else %}
+                        <span class="badge badge-agotada text-xs">Límite Total</span>
+                        {% endif %}
+
+                        {% if account.activa %}
+                        <span class="badge bg-primary-100 text-primary-700 text-xs animate-pulse">En uso</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="deleteAccount('{{ account.id }}')"
+                class="text-slate-400 hover:text-red-500 transition-colors" {% if account.activa %}disabled{% endif %}>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Cuotas -->
+        <div class="grid grid-cols-2 gap-2 mb-4">
+            {% set anthropic_quota = account.get_anthropic_quota() %}
+            {% set gemini_quota = account.get_gemini_quota() %}
+
+            <div class="bg-slate-50 rounded-lg p-3 text-center">
+                <span class="badge badge-anthropic text-xs mb-1">Anthropic</span>
+                {% if account.is_anthropic_available() %}
+                <p class="text-sm font-medium text-green-600">Disponible</p>
+                {% else %}
+                <p class="text-sm font-medium text-red-600">Agotada</p>
+                {% if anthropic_quota and anthropic_quota.proximo_reset %}
+                <p class="text-xs text-slate-500">Reset: {{ anthropic_quota.proximo_reset.strftime('%d/%m %H:%M') }}</p>
+                {% endif %}
+                {% endif %}
+            </div>
+
+            <div class="bg-slate-50 rounded-lg p-3 text-center">
+                <span class="badge badge-gemini text-xs mb-1">Gemini</span>
+                {% if account.is_gemini_available() %}
+                <p class="text-sm font-medium text-green-600">Disponible</p>
+                {% else %}
+                <p class="text-sm font-medium text-red-600">Agotada</p>
+                {% if gemini_quota and gemini_quota.proximo_reset %}
+                <p class="text-xs text-slate-500">Reset: {{ gemini_quota.proximo_reset.strftime('%d/%m %H:%M') }}</p>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="flex justify-between text-sm text-slate-500 mb-4">
+            <span>
+                <span class="font-medium text-slate-700">{{ account.veces_usada }}</span> sesiones
+            </span>
+            <span>
+                <span class="font-medium text-slate-700">
+                    {{ "%.1f"|format(account.tiempo_total_uso.total_seconds() / 3600 if account.tiempo_total_uso else 0)
+                    }}h
+                </span> acumuladas
+            </span>
+        </div>
+
+        <!-- Acciones -->
+        {% if not account.activa %}
+        <div class="flex gap-2">
+            <button onclick="startSession('{{ account.id }}', 'anthropic')" class="btn btn-anthropic text-sm flex-1" {%
+                if not account.is_anthropic_available() %}disabled{% endif %}>
+                Usar Anthropic
+            </button>
+            <button onclick="startSession('{{ account.id }}', 'gemini')" class="btn btn-gemini text-sm flex-1" {% if not
+                account.is_gemini_available() %}disabled{% endif %}>
+                Usar Gemini
+            </button>
+        </div>
+        {% else %}
+        <div class="bg-primary-50 rounded-lg p-3 text-center">
+            <p class="text-sm text-primary-700 font-medium">Cuenta en uso</p>
+            <a href="{{ url_for('dashboard.index') }}" class="text-xs text-primary-600 hover:underline">
+                Ver en dashboard →
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="col-span-full text-center py-12">
+        <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+        </div>
+        <p class="text-slate-500 mb-2">No tienes cuentas registradas</p>
+        <p class="text-sm text-slate-400">Agrega una cuenta para comenzar a trabajar</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Manejador de formulario
+    document.getElementById('form-add-account')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('new-account-email').value;
+
+        try {
+            await API.post('/api/accounts', { email_google: email });
+            showToast('Cuenta agregada exitosamente', 'success');
+            location.reload();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+
+    async function startSession(accountId, provider) {
+        try {
+            await API.post('/api/sessions/start', {
+                account_id: accountId,
+                provider: provider
+            });
+            showToast(`Sesión iniciada con ${provider}`, 'success');
+            window.location.href = '/';
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    async function deleteAccount(accountId) {
+        if (!confirm('¿Estás seguro de eliminar esta cuenta? Esta acción no se puede deshacer.')) return;
+
+        try {
+            await API.delete(`/api/accounts/${accountId}`);
+            showToast('Cuenta eliminada', 'success');
+            document.querySelector(`[data-id="${accountId}"]`)?.remove();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    function filterAccounts(filter) {
+        const items = document.querySelectorAll('.account-item');
+        const buttons = document.querySelectorAll('.filter-btn');
+
+        buttons.forEach(btn => btn.classList.remove('active', 'bg-primary-100', 'text-primary-700'));
+        document.querySelector(`[data-filter="${filter}"]`)?.classList.add('active', 'bg-primary-100', 'text-primary-700');
+
+        items.forEach(item => {
+            const clasificacion = item.dataset.clasificacion;
+            const activa = item.dataset.activa === 'true';
+
+            let show = false;
+
+            switch (filter) {
+                case 'all':
+                    show = true;
+                    break;
+                case 'disponibles':
+                    show = clasificacion === 'disponible';
+                    break;
+                case 'limite_parcial':
+                    show = clasificacion === 'limite_parcial';
+                    break;
+                case 'limite_total':
+                    show = clasificacion === 'limite_total';
+                    break;
+            }
+
+            item.style.display = show ? '' : 'none';
+        });
+    }
+
+    async function loadAccounts(sortBy) {
+        window.location.href = `?sort=${sortBy}`;
+    }
+</script>
+{% endblock %}

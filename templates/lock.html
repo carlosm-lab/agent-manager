@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Desbloquear - Antigravity Manager{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center">
+    <div class="card w-full max-w-sm text-center">
+        <!-- Icono de Candado -->
+        <div class="mb-6">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-slate-700/50 rounded-full mb-4"
+                id="lock-icon">
+                {% if locked %}
+                <!-- Icono de bloqueo temporal -->
+                <svg class="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                {% else %}
+                <svg class="w-10 h-10 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                {% endif %}
+            </div>
+            <h1 class="text-2xl font-bold text-white">
+                {% if locked %}Acceso Bloqueado{% else %}Acceso Protegido{% endif %}
+            </h1>
+            <p class="text-slate-400 mt-2 text-sm">
+                {% if locked %}
+                Espera a que termine el bloqueo
+                {% else %}
+                Ingresa tu PIN para continuar
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Contador de bloqueo -->
+        {% if locked %}
+        <div class="bg-red-500/20 border border-red-500/50 text-red-300 p-4 rounded-lg mb-6">
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="font-mono text-xl font-bold" id="lockout-timer">--:--</span>
+            </div>
+            <p class="text-sm" id="lockout-message">{{ error }}</p>
+        </div>
+        {% else %}
+        <!-- Mensaje de Error normal -->
+        {% if error %}
+        <div class="bg-red-500/20 border border-red-500/50 text-red-300 p-3 rounded-lg mb-6 text-sm">
+            {{ error }}
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- Formulario de PIN -->
+        <form method="POST" action="{{ url_for('dashboard.unlock') }}" class="space-y-6" id="unlock-form">
+            <div>
+                <input type="password" id="pin" name="pin" required autocomplete="off" maxlength="32"
+                    class="input text-center text-2xl tracking-widest bg-slate-800 border-slate-600 text-white placeholder-slate-500 {% if locked %}opacity-50 cursor-not-allowed{% endif %}"
+                    placeholder="••••••" {% if locked %}disabled{% else %}autofocus{% endif %}>
+            </div>
+
+            <button type="submit" id="submit-btn"
+                class="btn btn-primary w-full py-3 {% if locked %}opacity-50 cursor-not-allowed{% endif %}" {% if locked
+                %}disabled{% endif %}>
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                </svg>
+                {% if locked %}Bloqueado{% else %}Desbloquear{% endif %}
+            </button>
+        </form>
+
+        <!-- Aviso de Seguridad -->
+        <p class="text-xs text-slate-500 mt-6">
+            🔒 Tus datos están encriptados y protegidos
+        </p>
+    </div>
+</div>
+
+<script>
+    (function () {
+        // Initialize lockout timer if applicable
+        const lockoutSeconds = {{ lockout_seconds|default (0)
+    }};
+
+    if (lockoutSeconds > 0) {
+        let remaining = lockoutSeconds;
+        const timerEl = document.getElementById('lockout-timer');
+        const submitBtn = document.getElementById('submit-btn');
+        const pinInput = document.getElementById('pin');
+        const lockIcon = document.getElementById('lock-icon');
+
+        function formatTime(seconds) {
+            if (seconds >= 3600) {
+                const hrs = Math.floor(seconds / 3600);
+                const mins = Math.floor((seconds % 3600) / 60);
+                const secs = Math.floor(seconds % 60);
+                return `${hrs}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            }
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function updateTimer() {
+            if (remaining <= 0) {
+                // Reload page to allow new attempt
+                window.location.reload();
+                return;
+            }
+
+            timerEl.textContent = formatTime(remaining);
+            remaining--;
+            setTimeout(updateTimer, 1000);
+        }
+
+        updateTimer();
+    }
+}) ();
+</script>
+{% endblock %}

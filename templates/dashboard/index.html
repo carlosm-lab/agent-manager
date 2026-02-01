@@ -1,0 +1,1454 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Antigravity Manager{% endblock %}
+
+{% block content %}
+<!-- Sección de Cuenta Activa (PRIMERA) - DESTACADA -->
+<section class="mb-12">
+    <h2 class="text-2xl font-semibold text-white mb-6 flex items-center gap-3">
+        <span class="w-2 h-2 bg-primary-400 rounded-full animate-pulse"></span>
+        Cuenta Activa
+    </h2>
+
+    <div class="card card-featured" id="active-account-card">
+        {% if active_account and active_session %}
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 p-6">
+            <!-- Información de Cuenta -->
+            <div class="flex items-center gap-4 flex-1 min-w-0">
+                {% set initial = (active_account.nombre or active_account.email_google)[0]|upper %}
+                <div
+                    class="w-14 h-14 bg-gradient-to-br from-primary-400/30 to-primary-600/20 rounded-2xl flex items-center justify-center text-white font-semibold text-xl shrink-0 border border-primary-400/20">
+                    {{ initial }}
+                </div>
+                <div class="min-w-0">
+                    {% if active_account.nombre %}
+                    <p class="font-semibold text-white text-lg truncate">{{ active_account.nombre }}</p>
+                    <p class="text-sm text-slate-400 truncate">{{ active_account.email_google }}</p>
+                    {% else %}
+                    <p class="font-semibold text-white text-lg truncate">{{ active_account.email_google }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Estado de Cuotas -->
+            <div class="flex items-center gap-6 lg:border-0 border-t border-white/5 pt-4 lg:pt-0">
+                <div class="flex gap-4">
+                    <div class="text-center">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Anthropic</p>
+                        {% if active_session.provider == 'anthropic' %}
+                        <span class="badge badge-anthropic">
+                            <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
+                            En Uso
+                        </span>
+                        {% elif active_account.is_anthropic_available() %}
+                        <span class="badge badge-disponible">Disponible</span>
+                        {% else %}
+                        <span class="badge badge-agotada">Agotada</span>
+                        {% endif %}
+                    </div>
+                    <div class="text-center">
+                        <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Gemini</p>
+                        {% if active_session.provider == 'gemini' %}
+                        <span class="badge badge-gemini">
+                            <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
+                            En Uso
+                        </span>
+                        {% elif active_account.is_gemini_available() %}
+                        <span class="badge badge-disponible">Disponible</span>
+                        {% else %}
+                        <span class="badge badge-agotada">Agotada</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Temporizador de Sesión - DESTACADO -->
+            <div class="text-center lg:text-right bg-white/5 rounded-xl px-6 py-4 border border-white/10">
+                <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">Tiempo de Sesión</p>
+                <div class="flex items-center justify-center lg:justify-end gap-3">
+                    <p class="font-mono text-3xl lg:text-4xl text-success font-semibold tabular-nums timer-counting"
+                        id="session-timer">00:00:00</p>
+                    <button id="timer-toggle-btn" onclick="toggleSessionTimer()"
+                        class="w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 border border-white/10 flex items-center justify-center transition-all group"
+                        title="Pausar/Iniciar contador">
+                        <!-- Icono Pausar (visible cuando está corriendo) -->
+                        <svg id="timer-pause-icon" class="w-5 h-5 text-slate-400 group-hover:text-white"
+                            fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                        </svg>
+                        <!-- Icono Iniciar (oculto por defecto) -->
+                        <svg id="timer-play-icon" class="w-5 h-5 text-slate-400 group-hover:text-success hidden"
+                            fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Acción CTA Principal -->
+            <div class="flex flex-col gap-2 lg:border-l lg:border-white/10 lg:pl-6">
+                <button onclick="openModal('modal-end-session')" class="btn btn-danger w-full lg:w-auto">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                    </svg>
+                    Finalizar Sesión
+                </button>
+                <p class="text-xs text-slate-500 text-center lg:text-left">Termina o cambia de cuenta</p>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-12">
+            <div
+                class="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-white/10">
+                <svg class="w-8 h-8 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                </svg>
+            </div>
+            <p class="text-slate-400 text-lg mb-2">No hay sesión activa</p>
+            <p class="text-slate-500 text-sm mb-6">Selecciona una cuenta para iniciar</p>
+            <button onclick="openModal('modal-accounts')" class="btn btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Seleccionar Cuenta
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Sección de Resumen -->
+<section class="mb-12">
+    <h2 class="text-2xl font-semibold text-white mb-6">Resumen General</h2>
+
+    <div class="stats-grid">
+        <!-- Total de Cuentas -->
+        <div class="card cursor-pointer hover:border-primary-400/50 transition-all group"
+            onclick="openModal('modal-total-cuentas')">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Total de Cuentas</p>
+                    <p class="text-4xl font-bold text-white tabular-nums" id="stat-total">{{ summary.total }}</p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-primary-500/20 rounded-xl flex items-center justify-center group-hover:bg-primary-500/30 transition-colors">
+                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disponibles -->
+        <div class="card cursor-pointer hover:border-success/50 transition-all group"
+            onclick="openModal('modal-disponibles')">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-2 h-2 bg-success rounded-full animate-pulse"></span>
+                        <p class="text-slate-500 text-xs uppercase tracking-wider">Disponibles</p>
+                    </div>
+                    <p class="text-4xl font-bold text-white tabular-nums" id="stat-disponibles">{{ summary.disponibles
+                        }}</p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-success/20 rounded-xl flex items-center justify-center group-hover:bg-success/30 transition-colors">
+                    <svg class="w-6 h-6 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Límite Anthropic -->
+        <div class="card cursor-pointer hover:border-anthropic/50 transition-all group"
+            onclick="openModal('modal-limite-anthropic')">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-2 h-2 bg-anthropic rounded-full"></span>
+                        <p class="text-slate-500 text-xs uppercase tracking-wider">Límite Anthropic</p>
+                    </div>
+                    <p class="text-4xl font-bold text-white tabular-nums" id="stat-limite-anthropic">{{
+                        summary.limite_anthropic }}</p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-anthropic/20 rounded-xl flex items-center justify-center group-hover:bg-anthropic/30 transition-colors">
+                    <svg class="w-6 h-6 text-anthropic" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Límite Gemini (Violet) -->
+        <div class="card cursor-pointer hover:border-gemini/50 transition-all group"
+            onclick="openModal('modal-limite-gemini')">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-2 h-2 bg-gemini rounded-full"></span>
+                        <p class="text-slate-500 text-xs uppercase tracking-wider">Límite Gemini</p>
+                    </div>
+                    <p class="text-4xl font-bold text-white tabular-nums" id="stat-limite-gemini">{{
+                        summary.limite_gemini }}</p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-gemini/20 rounded-xl flex items-center justify-center group-hover:bg-gemini/30 transition-colors">
+                    <svg class="w-6 h-6 text-gemini" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Límite Total -->
+        <div class="card cursor-pointer hover:border-danger/50 transition-all group"
+            onclick="openModal('modal-limite-total'); Dashboard.loadModalAccounts('total_limit', 'list-limite-total')">
+            <div class="flex items-center justify-between">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="w-2 h-2 bg-danger rounded-full"></span>
+                        <p class="text-slate-500 text-xs uppercase tracking-wider">Límite Total</p>
+                    </div>
+                    <p class="text-4xl font-bold text-white tabular-nums" id="stat-total-limit">{{ summary.limite_total
+                        }}</p>
+                </div>
+                <div
+                    class="w-12 h-12 bg-danger/20 rounded-xl flex items-center justify-center group-hover:bg-danger/30 transition-colors">
+                    <svg class="w-6 h-6 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modelo Más Usado -->
+        <div class="card">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-slate-500 text-xs uppercase tracking-wider mb-1">Modelo más usado</p>
+                    <p class="text-2xl font-bold text-white capitalize" id="stat-modelo">
+                        {{ summary.modelo_mas_usado or 'Ninguno' }}
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-primary-500/20 rounded-xl flex items-center justify-center">
+                    <svg class="w-6 h-6 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal: Agregar Cuenta -->
+<div id="modal-add-account" class="modal-overlay">
+    <div class="modal-content w-full max-w-md">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Agregar Cuenta</h3>
+            <button onclick="closeModal('modal-add-account')" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <form id="form-new-account" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Nombre (opcional)</label>
+                <input type="text" id="new-account-nombre" class="input" placeholder="Ej: Trabajo, Personal...">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Email de Google</label>
+                <input type="email" id="new-account-email-form" class="input" placeholder="ejemplo@gmail.com" required>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" onclick="closeModal('modal-add-account')"
+                    class="btn btn-outline text-slate-600 flex-1">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary flex-1">
+                    Agregar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Total Cuentas -->
+<div id="modal-total-cuentas" class="modal-overlay">
+    <div class="modal-content w-full max-w-2xl">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Todas las Cuentas</h3>
+            <button onclick="closeModal('modal-total-cuentas')" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div id="list-total-cuentas" class="space-y-3 max-h-96 overflow-y-auto">
+            <div class="animate-pulse space-y-3">
+                <div class="flex items-center gap-4 px-3 py-3">
+                    <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Disponibles -->
+<div id="modal-disponibles" class="modal-overlay">
+    <div class="modal-content w-full max-w-2xl">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Cuentas Disponibles</h3>
+            <button onclick="closeModal('modal-disponibles')" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <p class="text-slate-500 text-sm mb-4">Cuentas con Anthropic y Gemini disponibles</p>
+        <div id="list-disponibles" class="space-y-3 max-h-96 overflow-y-auto">
+            <div class="animate-pulse space-y-3">
+                <div class="flex items-center gap-4 px-3 py-3">
+                    <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Límite Anthropic -->
+<div id="modal-limite-anthropic" class="modal-overlay">
+    <div class="modal-content w-full max-w-2xl">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Límite Anthropic</h3>
+            <button onclick="closeModal('modal-limite-anthropic')" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <p class="text-slate-500 text-sm mb-4">Cuentas con cuota Anthropic agotada</p>
+        <div id="list-limite-anthropic" class="space-y-3 max-h-96 overflow-y-auto">
+            <div class="animate-pulse space-y-3">
+                <div class="flex items-center gap-4 px-3 py-3">
+                    <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Límite Gemini -->
+<div id="modal-limite-gemini" class="modal-overlay">
+    <div class="modal-content w-full max-w-2xl">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Límite Gemini</h3>
+            <button onclick="closeModal('modal-limite-gemini')" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <p class="text-slate-500 text-sm mb-4">Cuentas con cuota Gemini agotada</p>
+        <div id="list-limite-gemini" class="space-y-3 max-h-96 overflow-y-auto">
+            <div class="animate-pulse space-y-3">
+                <div class="flex items-center gap-4 px-3 py-3">
+                    <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Límite Total -->
+<div id="modal-limite-total" class="modal-overlay">
+    <div class="modal-content w-full max-w-2xl">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Límite Total</h3>
+            <button onclick="closeModal('modal-limite-total')" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <p class="text-slate-500 text-sm mb-4">Cuentas con ambas cuotas agotadas</p>
+        <div id="list-limite-total" class="space-y-3 max-h-96 overflow-y-auto">
+            <div class="animate-pulse space-y-3">
+                <div class="flex items-center gap-4 px-3 py-3">
+                    <div class="w-10 h-10 bg-slate-200 rounded-full"></div>
+                    <div class="flex-1 space-y-2">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div>
+                        <div class="h-3 bg-slate-100 rounded w-1/2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Confirmar Eliminación -->
+<div id="modal-confirm-delete" class="modal-overlay">
+    <div class="modal-content w-full max-w-md text-center">
+        <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+        </div>
+        <h3 class="text-xl font-bold text-slate-800 mb-2">¿Eliminar cuenta?</h3>
+        <p class="text-slate-600 mb-2" id="delete-account-info">Esta acción no se puede deshacer.</p>
+        <div class="flex gap-3 mt-6">
+            <button onclick="closeModal('modal-confirm-delete')" class="btn btn-outline text-slate-600 flex-1">
+                Cancelar
+            </button>
+            <button onclick="confirmDeleteAccount()" class="btn btn-danger flex-1">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Cuenta -->
+<div id="modal-edit-account" class="modal-overlay">
+    <div class="modal-content w-full max-w-md">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Editar Cuenta</h3>
+            <button onclick="closeModal('modal-edit-account')" class="text-slate-400 hover:text-slate-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <form id="form-edit-account" class="space-y-4">
+            <input type="hidden" id="edit-account-id">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Nombre</label>
+                <input type="text" id="edit-account-nombre" class="input" placeholder="Nombre de la cuenta">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                <input type="email" id="edit-account-email" class="input" disabled>
+            </div>
+            <div class="flex gap-3 mt-6">
+                <button type="button" onclick="closeModal('modal-edit-account')"
+                    class="btn btn-outline text-slate-600 flex-1">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary flex-1">
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Finalizar Sesión (Consolidado) -->
+<div id="modal-end-session" class="modal-overlay">
+    <div class="modal-content w-full max-w-md">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Finalizar Sesión</h3>
+            <button onclick="closeModal('modal-end-session')"
+                class="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <p class="text-slate-600 mb-6">¿Cómo deseas finalizar la sesión actual?</p>
+
+        <div class="space-y-3">
+            <!-- Opción 1: Finalizar + Marcar Cuota Agotada -->
+            <button onclick="closeModal('modal-end-session'); openModal('modal-quota-end')"
+                class="w-full p-4 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl text-left transition-colors group">
+                <div class="flex items-start gap-3">
+                    <div
+                        class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-amber-200 transition-colors">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-amber-900">Cuota Agotada</p>
+                        <p class="text-sm text-amber-700">La cuota del proveedor se agotó y necesito indicar cuándo se
+                            reinicia</p>
+                    </div>
+                </div>
+            </button>
+
+            <!-- Opción 2: Finalizar Manualmente -->
+            <button onclick="endSessionManual(); closeModal('modal-end-session')"
+                class="w-full p-4 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-left transition-colors group">
+                <div class="flex items-start gap-3">
+                    <div
+                        class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center shrink-0 group-hover:bg-slate-200 transition-colors">
+                        <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-slate-800">Terminar Manualmente</p>
+                        <p class="text-sm text-slate-600">Solo deseo terminar la sesión sin marcar la cuota como agotada
+                        </p>
+                    </div>
+                </div>
+            </button>
+        </div>
+
+        <button onclick="closeModal('modal-end-session')" class="w-full mt-4 btn btn-outline text-slate-500">
+            Cancelar
+        </button>
+    </div>
+</div>
+
+<!-- Modal: Finalizar Cuota -->
+<div id="modal-quota-end" class="modal-overlay">
+    <div class="modal-content w-full max-w-lg">
+        <h3 class="text-xl font-bold text-slate-800 mb-4">Cuota Finalizada</h3>
+        <p class="text-slate-600 mb-6">
+            Ingresa la fecha y hora en que la cuota se reiniciará.
+        </p>
+
+        <form id="form-quota-end" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                    Fecha y hora de reinicio
+                </label>
+                <input type="datetime-local" id="reset-datetime" class="input" required>
+            </div>
+
+            <div class="flex gap-3 mt-6">
+                <button type="button" onclick="closeModal('modal-quota-end')"
+                    class="btn btn-outline text-slate-600 flex-1">
+                    Cancelar
+                </button>
+                <button type="submit" class="btn btn-danger flex-1">
+                    Confirmar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Esperar por Anthropic -->
+<div id="modal-wait-anthropic" class="modal-overlay">
+    <div class="modal-content w-full max-w-lg text-center">
+        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+        </div>
+
+        <h3 class="text-xl font-bold text-slate-800 mb-2">No hay Anthropic disponible</h3>
+        <p class="text-slate-600 mb-6">
+            ¿Deseas usar Gemini o esperar a que Anthropic esté disponible?
+        </p>
+
+        <div class="bg-slate-100 rounded-lg p-4 mb-6">
+            <p class="text-sm text-slate-500 mb-1">Próximo reinicio de Anthropic:</p>
+            <p class="timer-display text-primary-600" id="anthropic-countdown">--:--:--</p>
+        </div>
+
+        <div class="flex gap-3">
+            <button onclick="closeModal('modal-wait-anthropic')" class="btn btn-outline text-slate-600 flex-1">
+                Esperar
+            </button>
+            <button onclick="useGeminiInstead()" class="btn btn-gemini flex-1">
+                Usar Gemini
+            </button>
+        </div>
+    </div>
+</div>
+<!-- Modal: Todas las Cuentas -->
+<div id="modal-accounts" class="modal-overlay">
+    <div class="modal-content w-full max-w-2xl">
+        <!-- Encabezado -->
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h3 class="text-xl font-bold text-slate-800">Cuentas Disponibles</h3>
+                <p class="text-sm text-slate-500 mt-1">Cuentas con Anthropic y Gemini disponibles</p>
+            </div>
+            <button onclick="closeModal('modal-accounts')"
+                class="text-slate-400 hover:text-slate-600 p-2 rounded-lg hover:bg-slate-100 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Lista de Cuentas (solo cuentas disponibles) -->
+        <div class="space-y-1 max-h-[60vh] overflow-y-auto" id="accounts-list">
+            {% set avatar_colors = ['bg-red-500', 'bg-green-500', 'bg-teal-500', 'bg-purple-500', 'bg-orange-500',
+            'bg-pink-500', 'bg-indigo-500', 'bg-cyan-500'] %}
+            {% set available_accounts = accounts|selectattr('get_classification', 'equalto', 'disponible')|list %}
+            {% for account in accounts %}
+            {% if account.get_classification() == 'disponible' and not account.activa %}
+            <div class="flex items-center gap-4 px-3 py-3 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors"
+                onclick="selectAccount('{{ account.id }}', '{{ account.nombre or account.email_google.split('@')[0] }}', '{{ account.email_google }}', {{ 'true' if account.is_anthropic_available() else 'false' }}, {{ 'true' if account.is_gemini_available() else 'false' }})">
+
+                <!-- Avatar con Inicial (colores diferentes) -->
+                <div
+                    class="w-12 h-12 rounded-full flex items-center justify-center shrink-0 {{ avatar_colors[loop.index0 % avatar_colors|length] }} text-white font-bold text-xl uppercase">
+                    {{ (account.nombre[0] if account.nombre else account.email_google[0]) | upper }}
+                </div>
+
+                <!-- Nombre y Email -->
+                <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-slate-800 text-base">{{ account.nombre or
+                        account.email_google.split('@')[0] }}</p>
+                    <p class="text-slate-500 text-sm">{{ account.email_google }}</p>
+                </div>
+            </div>
+            {% endif %}
+            {% else %}
+            <div class="text-center py-12 text-slate-500">
+                <svg class="w-12 h-12 mx-auto mb-3 text-slate-300" fill="none" stroke="currentColor"
+                    viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+                <p class="font-medium mb-1">No hay cuentas disponibles</p>
+                <p class="text-sm">Todas las cuentas están en límite</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Seleccionar Proveedor -->
+<div id="modal-select-provider" class="modal-overlay">
+    <div class="modal-content w-full max-w-sm text-center">
+        <h3 class="text-lg font-bold text-slate-800 mb-2">Seleccionar Modelo</h3>
+        <p class="text-sm text-slate-500 mb-6" id="selected-account-name"></p>
+
+        <div class="flex gap-3">
+            <button onclick="startSessionFromModal('anthropic')" id="btn-provider-anthropic"
+                class="flex-1 px-4 py-3 text-sm font-medium rounded-xl border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                Anthropic
+            </button>
+            <button onclick="startSessionFromModal('gemini')" id="btn-provider-gemini"
+                class="flex-1 px-4 py-3 text-sm font-medium rounded-xl border-2 border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+                Gemini
+            </button>
+        </div>
+
+        <button onclick="closeModal('modal-select-provider')" class="mt-4 text-sm text-slate-500 hover:text-slate-700">
+            Cancelar
+        </button>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/time-manager.js') }}?v=2"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}?v=2"></script>
+
+<script>
+    // Inicializar dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+        {% if active_session %}
+        // Iniciar temporizador de sesión
+        const startTimeStr = '{{ active_session.inicio }}';
+        console.log('Initializing timer with:', startTimeStr);
+
+        let sessionStart;
+
+        // Manejar fechas UTC correctamente
+        // Si no tiene zona horaria, asumir UTC y agregar 'Z' para evitar interpretación como hora local
+        const hasTimezone = startTimeStr.includes('+') || (startTimeStr.split('-').length > 3);
+
+        if (hasTimezone && !startTimeStr.endsWith('Z')) {
+            sessionStart = new Date(startTimeStr);
+        } else {
+            // Agregar Z si no está presente para forzar UTC
+            const normalizedTime = startTimeStr.endsWith('Z') ? startTimeStr : startTimeStr + 'Z';
+            sessionStart = new Date(normalizedTime);
+        }
+
+        if (!isNaN(sessionStart.getTime())) {
+            // Verificar si tenemos tiempo acumulado guardado en LocalStorage
+            const savedSession = TimeManager.getSavedSession();
+            let offsetMs = 0;
+
+            // Solo usar offset guardado si coincide con sesión actual
+            if (savedSession && savedSession.id === '{{ active_session.id }}' && savedSession.tiempo_acumulado_ms) {
+                offsetMs = savedSession.tiempo_acumulado_ms;
+            }
+
+            TimeManager.startTimer('session-timer', sessionStart, offsetMs);
+
+            // Guardar claves de sesión con tiempo acumulado
+            TimeManager.saveSession({
+                id: '{{ active_session.id }}',
+                accountId: '{{ active_account.id }}',
+                provider: '{{ active_session.provider }}',
+                inicio: startTimeStr,
+                tiempo_acumulado_ms: offsetMs
+            });
+        } else {
+            console.error('No se pudo parsear el tiempo de inicio de sesión');
+            document.getElementById('session-timer').textContent = "Error";
+        }
+        {% endif %}
+
+        // Inicializar manejadores de formulario
+        initFormHandlers();
+    });
+
+    function initFormHandlers() {
+        // Formulario de agregar cuenta
+        document.getElementById('form-add-account')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('new-account-email').value;
+
+            try {
+                const result = await API.post('/api/accounts', { email_google: email });
+                showToast('Cuenta agregada exitosamente', 'success');
+                location.reload();
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+
+        // Formulario de fin de cuota
+        document.getElementById('form-quota-end')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const resetDatetime = document.getElementById('reset-datetime').value;
+
+            if (!resetDatetime) {
+                showToast('Ingresa la fecha de reinicio', 'warning');
+                return;
+            }
+
+            try {
+                await API.post('/api/sessions/rotate', {
+                    motivo: 'cuota_agotada',
+                    proximo_reset: new Date(resetDatetime).toISOString(),
+                    auto_start: true
+                });
+
+                TimeManager.clearSession();
+                showToast('Cuota marcada como agotada. Buscando nueva cuenta...', 'info');
+
+                setTimeout(() => location.reload(), 1000);
+            } catch (error) {
+                showToast(error.message, 'error');
+            }
+        });
+    }
+
+    async function endSessionManual() {
+        try {
+            const response = await API.post('/api/sessions/end', {
+                motivo: 'manual'
+            });
+
+            TimeManager.clearSession();
+            showToast('Sesión terminada correctamente', 'success');
+
+            // Solo recargar la página sin abrir modal automáticamente
+            setTimeout(() => location.reload(), 1000);
+
+        } catch (error) {
+            // Manejar errores de red vs errores de API
+            if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+                showToast('Error de conexión. Recargando...', 'warning');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(error.message || 'Error al finalizar sesión', 'error');
+            }
+        }
+    }
+
+    // Estado del timer con persistencia
+    let timerPaused = false;
+    let pausedElapsedMs = 0;
+    let pauseStartTime = null;
+
+    // Cargar estado de pausa desde localStorage al iniciar
+    (function restorePauseState() {
+        const savedState = localStorage.getItem('timer_pause_state');
+        if (savedState) {
+            try {
+                const state = JSON.parse(savedState);
+                timerPaused = state.paused || false;
+                pausedElapsedMs = state.elapsedMs || 0;
+                pauseStartTime = state.pauseStart ? new Date(state.pauseStart) : null;
+
+                if (timerPaused) {
+                    // Restaurar estado visual de pausa
+                    setTimeout(() => {
+                        const pauseIcon = document.getElementById('timer-pause-icon');
+                        const playIcon = document.getElementById('timer-play-icon');
+                        const timerEl = document.getElementById('session-timer');
+                        const btn = document.getElementById('timer-toggle-btn');
+
+                        if (pauseIcon && playIcon && timerEl && btn) {
+                            timerEl.classList.remove('timer-counting');
+                            timerEl.classList.add('text-amber-400');
+                            pauseIcon.classList.add('hidden');
+                            playIcon.classList.remove('hidden');
+                            btn.title = 'Iniciar contador';
+                            // Mostrar tiempo pausado
+                            timerEl.textContent = TimeManager.formatDuration(pausedElapsedMs);
+                        }
+                    }, 100);
+                }
+            } catch (e) {
+                console.error('Error restaurando estado de pausa:', e);
+            }
+        }
+    })();
+
+    function toggleSessionTimer() {
+        const pauseIcon = document.getElementById('timer-pause-icon');
+        const playIcon = document.getElementById('timer-play-icon');
+        const timerEl = document.getElementById('session-timer');
+        const btn = document.getElementById('timer-toggle-btn');
+
+        if (!timerPaused) {
+            // PAUSAR: Guardar tiempo transcurrido actual
+            timerPaused = true;
+            pauseStartTime = new Date();
+
+            // Parsear el tiempo mostrado actual a milisegundos
+            const currentTime = timerEl.textContent;
+            const parts = currentTime.split(':').map(Number);
+            pausedElapsedMs = (parts[0] * 3600 + parts[1] * 60 + parts[2]) * 1000;
+
+            // Guardar en localStorage
+            localStorage.setItem('timer_pause_state', JSON.stringify({
+                paused: true,
+                elapsedMs: pausedElapsedMs,
+                pauseStart: pauseStartTime.toISOString()
+            }));
+
+            timerEl.classList.remove('timer-counting');
+            timerEl.classList.add('text-amber-400');
+            pauseIcon.classList.add('hidden');
+            playIcon.classList.remove('hidden');
+            btn.title = 'Iniciar contador';
+            showToast('Contador pausado', 'info');
+        } else {
+            // REANUDAR: Continuar desde donde se pausó
+            timerPaused = false;
+
+            // Limpiar estado de localStorage
+            localStorage.removeItem('timer_pause_state');
+
+            // Reiniciar el timer con el offset guardado
+            const session = TimeManager.getSavedSession();
+            if (session && session.inicio) {
+                // Ajustar tiempo de inicio para que continúe desde el tiempo pausado
+                const now = new Date();
+                const newStartTime = new Date(now.getTime() - pausedElapsedMs);
+                TimeManager.startTimer('session-timer', newStartTime, 0);
+            }
+
+            pausedElapsedMs = 0;
+            pauseStartTime = null;
+
+            timerEl.classList.add('timer-counting');
+            timerEl.classList.remove('text-amber-400');
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+            btn.title = 'Pausar contador';
+            showToast('Contador reanudado', 'success');
+        }
+    }
+
+    // Exponer funciones globalmente
+    window.toggleSessionTimer = toggleSessionTimer;
+    window.isTimerPaused = function () { return timerPaused; };
+    window.getPausedElapsedMs = function () { return pausedElapsedMs; };
+
+
+    async function startSession(accountId, provider) {
+        try {
+            const result = await API.post('/api/sessions/start', {
+                account_id: accountId,
+                provider: provider
+            });
+
+            showToast(`Sesión iniciada con ${provider}`, 'success');
+            closeModal('modal-accounts');
+            location.reload();
+        } catch (error) {
+            if (error.message.includes('Anthropic') || error.message.includes('disponible')) {
+                // Mostrar modal de espera
+                openModal('modal-wait-anthropic');
+                loadAnthropicCountdown();
+            } else {
+                showToast(error.message, 'error');
+            }
+        }
+    }
+
+    async function loadAnthropicCountdown() {
+        try {
+            const result = await API.get('/api/quotas/next-reset/anthropic');
+            if (result.proximo_reset) {
+                TimeManager.startCountdown('anthropic-countdown', new Date(result.proximo_reset));
+            }
+        } catch (error) {
+            console.error('Error cargando cuenta regresiva:', error);
+        }
+    }
+
+    async function useGeminiInstead() {
+        try {
+            const result = await API.post('/api/sessions/rotate', {
+                auto_start: true
+            });
+
+            if (result.rotated) {
+                showToast('Usando cuenta con Gemini', 'success');
+                closeModal('modal-wait-anthropic');
+                location.reload();
+            } else {
+                showToast('No hay cuentas disponibles', 'error');
+            }
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    async function deleteAccount(accountId) {
+        if (!confirm('¿Estás seguro de eliminar esta cuenta?')) return;
+
+        try {
+            await API.delete(`/api/accounts/${accountId}`);
+            showToast('Cuenta eliminada', 'success');
+            document.querySelector(`[data-id="${accountId}"]`)?.remove();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    // Almacenar datos de cuenta seleccionada para modal de proveedor
+    let selectedAccountData = null;
+
+    function selectAccount(accountId, accountName, accountEmail, anthropicAvailable, geminiAvailable) {
+        selectedAccountData = {
+            id: accountId,
+            name: accountName,
+            email: accountEmail,
+            anthropicAvailable: anthropicAvailable,
+            geminiAvailable: geminiAvailable
+        };
+
+        // Actualizar modal con info de cuenta
+        document.getElementById('selected-account-name').textContent = accountName;
+
+        // Actualizar estado de botones
+        const btnAnthropic = document.getElementById('btn-provider-anthropic');
+        const btnGemini = document.getElementById('btn-provider-gemini');
+
+        btnAnthropic.disabled = !anthropicAvailable;
+        btnGemini.disabled = !geminiAvailable;
+
+        // Cerrar modal de cuentas y abrir modal de proveedor
+        closeModal('modal-accounts');
+        openModal('modal-select-provider');
+    }
+
+    async function startSessionFromModal(provider) {
+        if (!selectedAccountData) {
+            showToast('Error: no hay cuenta seleccionada', 'error');
+            return;
+        }
+
+        try {
+            const result = await API.post('/api/sessions/start', {
+                account_id: selectedAccountData.id,
+                provider: provider
+            });
+
+            // Guardar sesión con tiempo acumulado en LocalStorage
+            TimeManager.saveSession({
+                id: result.session.id,
+                account_id: result.session.account_id,
+                provider: result.session.provider,
+                inicio: result.session.inicio,
+                tiempo_acumulado_ms: (result.tiempo_acumulado_segundos || 0) * 1000
+            });
+
+            showToast(`Sesión iniciada con ${provider}`, 'success');
+            closeModal('modal-select-provider');
+            selectedAccountData = null;
+            location.reload();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    function filterAccounts(filter) {
+        const items = document.querySelectorAll('.account-item');
+        const buttons = document.querySelectorAll('.filter-btn');
+
+        // Actualizar estilo de botones
+        buttons.forEach(btn => {
+            if (btn.dataset.filter === filter) {
+                btn.classList.remove('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+                btn.classList.add('bg-primary-500', 'text-white');
+            } else {
+                btn.classList.remove('bg-primary-500', 'text-white');
+                btn.classList.add('bg-slate-100', 'text-slate-600', 'hover:bg-slate-200');
+            }
+        });
+
+        items.forEach(item => {
+            const clasificacion = item.dataset.clasificacion;
+
+            let show = false;
+
+            switch (filter) {
+                case 'all':
+                    show = true;
+                    break;
+                case 'disponibles':
+                    show = clasificacion === 'disponible';
+                    break;
+            }
+
+            item.style.display = show ? '' : 'none';
+        });
+    }
+
+    async function sortAccounts(sortBy) {
+        try {
+            const result = await API.get(`/api/accounts?sort=${sortBy}`);
+            // Recargar para aplicar ordenamiento (o actualizar DOM dinámicamente)
+            location.reload();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    // Parsear fecha ISO como UTC (corregir bug de zona horaria)
+    function parseUTCDate(dateStr) {
+        if (!dateStr) return null;
+        // Si la cadena no tiene info de zona horaria, tratar como UTC agregando Z
+        const hasTimezone = dateStr.includes('+') || dateStr.endsWith('Z') || (dateStr.split('-').length > 3);
+        const normalized = hasTimezone ? dateStr : dateStr + 'Z';
+        return new Date(normalized);
+    }
+
+    // Inicializar temporizadores de cuenta regresiva para tiempos de reinicio
+    function initCountdowns() {
+        const countdownElements = document.querySelectorAll('.countdown-timer[data-reset]');
+
+        countdownElements.forEach(el => {
+            const resetTime = parseUTCDate(el.dataset.reset);
+
+            const updateCountdown = () => {
+                const now = new Date();
+                const diff = resetTime - now;
+
+                if (diff <= 0) {
+                    el.textContent = 'Disponible';
+                    el.closest('.bg-amber-50, .bg-blue-50')?.classList.remove('bg-amber-50', 'bg-blue-50', 'text-amber-700', 'text-blue-700');
+                    el.closest('div')?.classList.add('bg-green-50', 'text-green-700');
+                    return;
+                }
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                if (hours > 24) {
+                    const days = Math.floor(hours / 24);
+                    el.textContent = `${days}d ${hours % 24}h`;
+                } else if (hours > 0) {
+                    el.textContent = `${hours}h ${minutes}m`;
+                } else {
+                    el.textContent = `${minutes}m ${seconds}s`;
+                }
+            };
+
+            updateCountdown();
+            setInterval(updateCountdown, 1000);
+        });
+    }
+
+    // Iniciar cuentas regresivas cuando el modal se abre
+    document.getElementById('modal-accounts')?.addEventListener('transitionend', () => {
+        if (document.getElementById('modal-accounts')?.classList.contains('active')) {
+            initCountdowns();
+        }
+    });
+
+    // También inicializar al cargar página en caso de que modal no se use
+    initCountdowns();
+
+    // ==== NUEVAS FUNCIONES DE MODAL ====
+
+    let accountToDelete = null;
+
+    // Formatear cuenta regresiva para mostrar
+    function formatCountdown(resetDate) {
+        const now = new Date();
+        const resetTime = parseUTCDate(resetDate);
+        const diff = resetTime - now;
+
+        if (diff <= 0) return '<span class="text-green-600">Disponible</span>';
+
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        if (days > 0) return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+        if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+        return `${minutes}m ${seconds}s`;
+    }
+
+    // Obtener letra inicial para avatar
+    function getInitial(account) {
+        const name = account.nombre || account.email_google;
+        return name.charAt(0).toUpperCase();
+    }
+
+    // Obtener color basado en inicial
+    function getAvatarColor(initial) {
+        const colors = [
+            'bg-sky-500', 'bg-emerald-500', 'bg-violet-500', 'bg-rose-500',
+            'bg-amber-500', 'bg-cyan-500', 'bg-pink-500', 'bg-indigo-500'
+        ];
+        const index = initial.charCodeAt(0) % colors.length;
+        return colors[index];
+    }
+
+    // Escapar comillas para JS inline
+    function escapeQuotes(str) {
+        return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+
+    // Renderizar item de cuenta para lista simple (Total Cuentas)
+    function renderAccountItemSimple(account) {
+        const initial = getInitial(account);
+        const bgColor = getAvatarColor(initial);
+        const displayName = account.nombre || account.email_google.split('@')[0];
+        const safeNombre = escapeQuotes(account.nombre || '');
+        const safeName = escapeQuotes(displayName);
+
+        return `
+            <div class="flex items-center gap-4 py-3 border-b border-slate-100 last:border-b-0">
+                <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
+                    ${initial}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-slate-800 truncate">${displayName}</p>
+                    <p class="text-sm text-slate-500 truncate">${account.email_google}</p>
+                </div>
+                <div class="flex gap-1 shrink-0">
+                    <button onclick="openEditModal('${account.id}', '${safeNombre}', '${account.email_google}')" 
+                        class="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Editar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </button>
+                    <button onclick="openDeleteModal('${account.id}', '${safeName}')" 
+                        class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    // Renderizar item de cuenta solo lectura (sin botones)
+    function renderAccountItemReadOnly(account) {
+        const initial = getInitial(account);
+        const bgColor = getAvatarColor(initial);
+        const displayName = account.nombre || account.email_google.split('@')[0];
+
+        return `
+            <div class="flex items-center gap-4 py-3 border-b border-slate-100 last:border-b-0">
+                <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
+                    ${initial}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-slate-800 truncate">${displayName}</p>
+                    <p class="text-sm text-slate-500 truncate">${account.email_google}</p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Renderizar item de cuenta con cuenta regresiva
+    function renderAccountItemWithCountdown(account, provider) {
+        const quota = account.quotas?.[provider];
+        const resetDate = quota?.proximo_reset;
+        const initial = getInitial(account);
+        const bgColor = getAvatarColor(initial);
+        const displayName = account.nombre || account.email_google.split('@')[0];
+
+        return `
+            <div class="flex items-center gap-4 py-3 border-b border-slate-100 last:border-b-0">
+                <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
+                    ${initial}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-slate-800 truncate">${displayName}</p>
+                    <p class="text-sm text-slate-500 truncate">${account.email_google}</p>
+                </div>
+                <div class="text-right shrink-0">
+                    <p class="text-xs text-slate-400">Reinicio:</p>
+                    <p class="font-mono text-sm text-amber-600 countdown-live" data-reset="${resetDate}">
+                        ${resetDate ? formatCountdown(resetDate) : 'Sin fecha'}
+                    </p>
+                </div>
+            </div>
+        `;
+    }
+
+    // Cargar cuentas y renderizar en modal
+    async function loadAccountsForModal(modalId, filter = '') {
+        const listEl = document.getElementById(`list-${modalId.replace('modal-', '')}`);
+        if (!listEl) return;
+
+        listEl.innerHTML = '<p class="text-slate-500 text-center py-4">Cargando...</p>';
+
+        try {
+            const url = filter ? `/api/accounts?filter=${filter}` : '/api/accounts';
+            const result = await API.get(url);
+            const accounts = result.accounts || [];
+
+            if (accounts.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-400 text-center py-8">No hay cuentas en esta categoría</p>';
+                return;
+            }
+
+            let html = '';
+            for (const account of accounts) {
+                if (modalId === 'modal-total-cuentas') {
+                    // Solo Total Cuentas tiene botones de editar/eliminar
+                    html += renderAccountItemSimple(account);
+                } else if (modalId === 'modal-disponibles') {
+                    // Disponibles: sin botones, solo info
+                    html += renderAccountItemReadOnly(account);
+                } else if (modalId === 'modal-limite-anthropic') {
+                    html += renderAccountItemWithCountdown(account, 'anthropic');
+                } else if (modalId === 'modal-limite-gemini') {
+                    html += renderAccountItemWithCountdown(account, 'gemini');
+                } else if (modalId === 'modal-limite-total') {
+                    // Para límite total, mostrar ambas cuentas regresivas
+                    const initial = getInitial(account);
+                    const bgColor = getAvatarColor(initial);
+                    const displayName = account.nombre || account.email_google.split('@')[0];
+
+                    html += `
+                        <div class="flex items-center gap-4 py-3 border-b border-slate-100 last:border-b-0">
+                            <div class="w-10 h-10 ${bgColor} rounded-full flex items-center justify-center text-white font-bold text-lg shrink-0">
+                                ${initial}
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="font-semibold text-slate-800 truncate">${displayName}</p>
+                                <p class="text-sm text-slate-500 truncate">${account.email_google}</p>
+                                <div class="flex flex-wrap gap-2 mt-1 text-xs">
+                                    <span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded">
+                                        Anthropic: <span class="countdown-live font-mono" data-reset="${account.quotas?.anthropic?.proximo_reset}">
+                                            ${account.quotas?.anthropic?.proximo_reset ? formatCountdown(account.quotas.anthropic.proximo_reset) : '-'}
+                                        </span>
+                                    </span>
+                                    <span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded">
+                                        Gemini: <span class="countdown-live font-mono" data-reset="${account.quotas?.gemini?.proximo_reset}">
+                                            ${account.quotas?.gemini?.proximo_reset ? formatCountdown(account.quotas.gemini.proximo_reset) : '-'}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    html += renderAccountItemReadOnly(account);
+                }
+            }
+
+            listEl.innerHTML = html;
+            startLiveCountdowns();
+        } catch (error) {
+            listEl.innerHTML = `<p class="text-red-500 text-center py-4">Error: ${error.message}</p>`;
+        }
+    }
+
+    // Iniciar actualizaciones de cuenta regresiva en vivo
+    function startLiveCountdowns() {
+        document.querySelectorAll('.countdown-live[data-reset]').forEach(el => {
+            if (el.dataset.reset && el.dataset.reset !== 'undefined' && el.dataset.reset !== 'null') {
+                const updateFn = () => {
+                    el.innerHTML = formatCountdown(el.dataset.reset);
+                };
+                updateFn();
+                setInterval(updateFn, 1000);
+            }
+        });
+    }
+
+    // Sobrescribir openModal para cargar datos
+    const originalOpenModal = window.openModal;
+    window.openModal = function (modalId) {
+        originalOpenModal(modalId);
+
+        // Cargar datos para modales específicos
+        if (modalId === 'modal-total-cuentas') {
+            loadAccountsForModal(modalId, ''); // Sin filtro = todas las cuentas
+        } else if (modalId === 'modal-disponibles') {
+            loadAccountsForModal(modalId, 'disponible'); // Sin 's' para coincidir con backend
+        } else if (modalId === 'modal-limite-anthropic') {
+            // Necesita filtro personalizado para límite anthropic
+            loadAccountsWithAnthropicLimit();
+        } else if (modalId === 'modal-limite-gemini') {
+            loadAccountsWithGeminiLimit();
+        } else if (modalId === 'modal-limite-total') {
+            loadAccountsForModal(modalId, 'exhausted_total'); // Valor correcto del backend
+        }
+    };
+
+    // Cargar cuentas con límite específico
+    async function loadAccountsWithAnthropicLimit() {
+        const listEl = document.getElementById('list-limite-anthropic');
+        listEl.innerHTML = '<p class="text-slate-500 text-center py-4">Cargando...</p>';
+
+        try {
+            const result = await API.get('/api/accounts');
+            const accounts = (result.accounts || []).filter(a =>
+                a.quotas?.anthropic?.estado === 'agotada' ||
+                (a.quotas?.anthropic?.fecha_reset && new Date(a.quotas.anthropic.fecha_reset) > new Date())
+            );
+
+            if (accounts.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-400 text-center py-8">No hay cuentas con límite Anthropic</p>';
+                return;
+            }
+
+            listEl.innerHTML = accounts.map(a => renderAccountItemWithCountdown(a, 'anthropic')).join('');
+            startLiveCountdowns();
+        } catch (error) {
+            listEl.innerHTML = `<p class="text-red-500 text-center py-4">Error: ${error.message}</p>`;
+        }
+    }
+
+    async function loadAccountsWithGeminiLimit() {
+        const listEl = document.getElementById('list-limite-gemini');
+        listEl.innerHTML = '<p class="text-slate-500 text-center py-4">Cargando...</p>';
+
+        try {
+            const result = await API.get('/api/accounts');
+            const accounts = (result.accounts || []).filter(a =>
+                a.quotas?.gemini?.estado === 'agotada' ||
+                (a.quotas?.gemini?.fecha_reset && new Date(a.quotas.gemini.fecha_reset) > new Date())
+            );
+
+            if (accounts.length === 0) {
+                listEl.innerHTML = '<p class="text-slate-400 text-center py-8">No hay cuentas con límite Gemini</p>';
+                return;
+            }
+
+            listEl.innerHTML = accounts.map(a => renderAccountItemWithCountdown(a, 'gemini')).join('');
+            startLiveCountdowns();
+        } catch (error) {
+            listEl.innerHTML = `<p class="text-red-500 text-center py-4">Error: ${error.message}</p>`;
+        }
+    }
+
+    // Abrir modal de edición
+    function openEditModal(id, nombre, email) {
+        document.getElementById('edit-account-id').value = id;
+        document.getElementById('edit-account-nombre').value = nombre;
+        document.getElementById('edit-account-email').value = email;
+        openModal('modal-edit-account');
+    }
+
+    // Abrir modal de eliminación
+    function openDeleteModal(id, displayName) {
+        accountToDelete = id;
+        document.getElementById('delete-account-info').textContent = `¿Eliminar "${displayName}"? Esta acción no se puede deshacer.`;
+        openModal('modal-confirm-delete');
+    }
+
+    // Confirmar eliminación
+    async function confirmDeleteAccount() {
+        if (!accountToDelete) return;
+
+        try {
+            await API.delete(`/api/accounts/${accountToDelete}`);
+            showToast('Cuenta eliminada', 'success');
+            closeModal('modal-confirm-delete');
+            location.reload();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    }
+
+    // Formulario: Agregar nueva cuenta
+    document.getElementById('form-new-account')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('new-account-email-form').value.trim();
+        const nombre = document.getElementById('new-account-nombre').value.trim();
+
+        try {
+            await API.post('/api/accounts', { email_google: email, nombre: nombre || null });
+            showToast('Cuenta agregada', 'success');
+            closeModal('modal-add-account');
+            location.reload();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+
+    // Formulario: Editar cuenta
+    document.getElementById('form-edit-account')?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const id = document.getElementById('edit-account-id').value;
+        const nombre = document.getElementById('edit-account-nombre').value.trim();
+
+        try {
+            await API.put(`/api/accounts/${id}`, { nombre: nombre || null });
+            showToast('Cuenta actualizada', 'success');
+            closeModal('modal-edit-account');
+            location.reload();
+        } catch (error) {
+            showToast(error.message, 'error');
+        }
+    });
+</script>
+{% endblock %}
